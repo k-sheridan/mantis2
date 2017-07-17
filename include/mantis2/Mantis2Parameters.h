@@ -1,0 +1,15 @@
+/*
+ * Mantis2Parameters.h
+ *
+ *  Created on: Jul 17, 2017
+ *      Author: kevin
+ */
+
+#ifndef MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_
+#define MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_
+
+
+
+
+
+#endif /* MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_ */
