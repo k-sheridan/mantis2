@@ -169,6 +169,7 @@ struct MantisImage{
 	cv::Mat K;
 	std::string frame_id;
 	ros::Time stamp;
+	tf::Transform b2c, c2b; // transform to and from the camera frame
 
 	std::vector<std::vector<cv::Point> > raw_quads;
 
@@ -176,12 +177,24 @@ struct MantisImage{
 
 	}
 
-	MantisImage(cv::Mat img, cv::Mat K, std::string frame, ros::Time t)
+	MantisImage(cv::Mat img, cv::Mat K, std::string frame, ros::Time t, tf::TransformListener* tf_list)
 	{
 		this->K = K;
 		this->img = img;
 		frame_id = frame;
 		stamp = t;
+
+		//look up transform
+		tf::StampedTransform b2c_st;
+		try {
+			tf_list->lookupTransform(BASE_FRAME, frame,
+					ros::Time(0), b2c_st);
+		} catch (tf::TransformException& e) {
+			ROS_WARN_STREAM(e.what());
+		}
+
+		b2c = tf::Transform(b2c_st);
+		c2b = b2c.inverse();
 	}
 
 	/*
@@ -210,13 +223,7 @@ struct MantisImage{
 struct Measurement{
 	MantisImage img1, img2, img3;
 
-	int detectQuadrilaterals()
-	{
-		int quads = detectQuadrilaterals(img1);
-		quads += detectQuadrilaterals(img2);
 
-		return quads;
-	}
 
 	int detectQuadrilaterals(MantisImage& img)
 	{
@@ -268,6 +275,31 @@ struct Measurement{
 		ROS_DEBUG_STREAM("detected " << img.raw_quads.size() << " quads");
 
 		return img.raw_quads.size();
+	}
+};
+
+
+struct BaseFrameHypothesis{
+private:
+	tf::Transform w2b;
+public:
+
+	Measurement* measurement;
+
+	BaseFrameHypothesis()
+	{
+		measurement = NULL;
+	}
+
+	BaseFrameHypothesis(tf::Transform _w2b){
+		w2b = _w2b;
+		measurement = NULL;
+	}
+
+	BaseFrameHypothesis(tf::Transform _w2b, Measurement* z)
+	{
+		w2b = _w2b;
+		measurement = z;
 	}
 };
 

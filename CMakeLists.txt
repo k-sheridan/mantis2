@@ -73,5 +73,8 @@ add_library(yaw_markov include/mantis2/YawMarkov.cpp)
 set_target_properties(yaw_markov PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(yaw_markov ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES} mantis2_params mantis2_types)
 
+add_library(xyMarkov include/mantis2/XYMarkovModel.cpp)
+target_link_libraries(xyMarkov ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES} mantis2_params mantis2_types)
+
 add_executable(mantis2_node src/mantis2_node.cpp)
-target_link_libraries(mantis2_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES})
+target_link_libraries(mantis2_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES} mantis2_types mantis2_params testPointGen xyMarkov)

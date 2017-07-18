@@ -41,7 +41,13 @@
 
 #include "mantis2/YawMarkov.h"
 
+#include "mantis2/XYMarkovModel.h"
+
 tf::TransformListener* tf_listener;
+
+BaseFrameHypothesis currentBestPoseEstimate;
+
+XYMarkovModel xy_markov_model;
 
 std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; // error test points
 #include "mantis2/GridTestPointGeneration.h" // function to generate the testpoints
@@ -65,10 +71,12 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 	ROS_DEBUG("mantis2 start");
 	Measurement measurement;
 
+	//lookup camera from base tfs
+
 	//form all MantisImages
-	measurement.img1 = MantisImage(cv_bridge::toCvCopy(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp);
-	measurement.img2 = MantisImage(cv_bridge::toCvCopy(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp);
-	measurement.img3 = MantisImage(cv_bridge::toCvCopy(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp);
+	measurement.img1 = MantisImage(cv_bridge::toCvCopy(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp, tf_listener);
+	measurement.img2 = MantisImage(cv_bridge::toCvCopy(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp, tf_listener);
+	measurement.img3 = MantisImage(cv_bridge::toCvCopy(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp, tf_listener);
 
 	measurement.detectQuadrilaterals(measurement.img1); // find quadrilaterals in image 1
 
@@ -114,7 +122,30 @@ int main(int argc, char **argv)
 	message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(50), image1_sub, cinfo1_sub, image2_sub, cinfo2_sub, image3_sub, cinfo3_sub);
 	sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4, _5, _6));
 
+
+	// get the transform from world to base for initialization
+	ROS_INFO_STREAM("WAITING FOR TANSFORM FROM " << WORLD_FRAME << " TO " << BASE_FRAME);
+	if(tf_listener->waitForTransform(WORLD_FRAME, BASE_FRAME, ros::Time(0), ros::Duration(10))){
+		tf::StampedTransform w2b;
+		try {
+			tf_listener->lookupTransform(WORLD_FRAME, BASE_FRAME,
+					ros::Time(0), w2b);
+		} catch (tf::TransformException& e) {
+			ROS_WARN_STREAM(e.what());
+		}
+		tf::Transform pose = tf::Transform(w2b);
+		currentBestPoseEstimate = BaseFrameHypothesis(pose);
+		ROS_INFO_STREAM("GOT TRANSFORM WITH INITIAL POS OF: " << pose.getOrigin().x() << ", " << pose.getOrigin().y() << ", " << pose.getOrigin().z());
+	}
+	else
+	{
+		ROS_FATAL("COULD NOT GET TRANSFORM");
+		ros::shutdown();
+		return 1;
+	}
+
 	//start the program
 	ros::spin();
 
+	return 0;
 }

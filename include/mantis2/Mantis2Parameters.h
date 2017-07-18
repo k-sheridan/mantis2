@@ -57,4 +57,11 @@
 #define GREEN cv::Vec3i(0, 255, 0)
 
 
+//MARKOV
+#define XY_MARKOV_RESOLUTION 0.1
+// howmany nodes to pad the edges by
+#define XY_MARKOV_EDGE_PADDING 10
+#define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
+
+
 #endif /* MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_ */
