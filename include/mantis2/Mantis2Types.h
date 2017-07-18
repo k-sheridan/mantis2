@@ -189,13 +189,18 @@ struct MantisImage{
 	 */
 	cv::Mat computeMonoImage(cv::Mat in)
 	{
-		ROS_ASSERT(DO_RED_GREEN_TRICK);
+#if DO_RED_GREEN_TRICK
 
 		cv::Mat bgr[3];   //destination array
 		cv::split(in,bgr);//split source
 
 		// combine just the red and green channels into one image
 		return ((bgr[1] + bgr[2]) / 2);
+#else
+		cv::Mat mono;
+		cv::cvtColor(in, mono, CV_BGR2GRAY);
+		return mono;
+#endif
 	}
 
 	operator cv::Mat() const {return img;} // conversion function
@@ -220,7 +225,7 @@ struct Measurement{
 
 		mono = img.computeMonoImage(scaled); // get G&R -> mono image
 
-		cv::GaussianBlur(mono, mono, cv::Size(3, 3), 3, 3);
+		cv::GaussianBlur(mono, mono, CANNY_BLUR_KERNEL, CANNY_BLUR_SIGMA);
 		cv::Canny(mono, canny, CANNY_HYSTERESIS, 3 * CANNY_HYSTERESIS, 3);
 		//cv::dilate(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
 		//cv::erode(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
@@ -235,11 +240,22 @@ struct Measurement{
 			cv::approxPolyDP(contours.at(i),approx,POLYGON_EPSILON,true);
 			if(approx.size() == 4)
 			{
-				img.raw_quads.push_back(approx);
+				if(cv::contourArea(approx) >= MINIMUM_CONTOUR_AREA)
+				{
+					img.raw_quads.push_back(approx);
+				}
 			}
 		}
 
 #if ULTRA_DEBUG
+		cv::cvtColor(canny, canny, CV_GRAY2BGR);
+		for( int i = 0; i< img.raw_quads.size(); i++ )
+		{
+			cv::Scalar color = cv::Scalar( 255,0,0 );
+			std::vector<std::vector<cv::Point> > cont;
+			cont.push_back(img.raw_quads.at(i));
+			cv::drawContours( canny, cont, 0, color, 2, 8);
+		}
 		cv::imshow("canny", canny);
 		cv::waitKey(30);
 #endif
