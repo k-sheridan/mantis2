@@ -28,6 +28,8 @@
 #include <tf/tf.h>
 #include <tf/tfMessage.h>
 
+#include "Mantis2Parameters.h"
+
 /*
  * a guess about our pose
  */
@@ -168,6 +170,8 @@ struct MantisImage{
 	std::string frame_id;
 	ros::Time stamp;
 
+	std::vector<std::vector<cv::Point> > raw_quads;
+
 	MantisImage(){
 
 	}
@@ -180,7 +184,70 @@ struct MantisImage{
 		stamp = t;
 	}
 
+	/*
+	 * special mono computation function using only green and red channels
+	 */
+	cv::Mat computeMonoImage(cv::Mat in)
+	{
+		ROS_ASSERT(DO_RED_GREEN_TRICK);
+
+		cv::Mat bgr[3];   //destination array
+		cv::split(in,bgr);//split source
+
+		// combine just the red and green channels into one image
+		return ((bgr[1] + bgr[2]) / 2);
+	}
+
 	operator cv::Mat() const {return img;} // conversion function
+};
+
+
+struct Measurement{
+	MantisImage img1, img2, img3;
+
+	int detectQuadrilaterals()
+	{
+		int quads = detectQuadrilaterals(img1);
+
+		return quads;
+	}
+
+	int detectQuadrilaterals(MantisImage& img)
+	{
+		cv::Mat mono, scaled, canny;
+
+		cv::resize(img.img, scaled, cv::Size(img.img.cols / QUAD_DETECTION_INV_SCALE, img.img.rows / QUAD_DETECTION_INV_SCALE)); // resize the image to reduce computationaly burden.
+
+		mono = img.computeMonoImage(scaled); // get G&R -> mono image
+
+		cv::GaussianBlur(mono, mono, cv::Size(3, 3), 3, 3);
+		cv::Canny(mono, canny, CANNY_HYSTERESIS, 3 * CANNY_HYSTERESIS, 3);
+		//cv::dilate(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
+		//cv::erode(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
+
+		std::vector<std::vector<cv::Point> > contours;
+
+		cv::findContours(canny, contours, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+
+		std::vector<cv::Point> approx;
+		for(int i = 0; i < contours.size(); i++)
+		{
+			cv::approxPolyDP(contours.at(i),approx,POLYGON_EPSILON,true);
+			if(approx.size() == 4)
+			{
+				img.raw_quads.push_back(approx);
+			}
+		}
+
+#if ULTRA_DEBUG
+		cv::imshow("canny", canny);
+		cv::waitKey(30);
+#endif
+
+		ROS_DEBUG_STREAM("detected " << img.raw_quads.size() << " quads");
+
+		return img.raw_quads.size();
+	}
 };
 
 
