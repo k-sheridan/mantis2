@@ -75,6 +75,11 @@ public:
 		return (this->getPosition() - other.getPosition()).length();
 	}
 
+	void setC2WEfficient(tf::Transform trans)
+	{
+		c2w = trans;
+	}
+
 	void setC2W(tf::Transform trans)
 	{
 		c2w = trans;
@@ -354,6 +359,7 @@ private:
 public:
 
 	Measurement* measurement;
+	double error; // per pixel color error
 
 	BaseFrameHypothesis()
 	{
@@ -370,6 +376,8 @@ public:
 		w2b = _w2b;
 		measurement = z;
 	}
+
+	tf::Transform& getW2B(){return w2b;}
 };
 
 

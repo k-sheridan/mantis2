@@ -31,26 +31,56 @@
 #include "mantis2/Mantis2Types.h"
 
 
-void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = false){
-
-}
-
-void evaluateMantisImage(MantisImage& img, int& projections, double& error, bool colorOnly = false){
-
-}
 
 void evaluateWhitePoints(MantisImage& img, int& projections, double& error)
 {
-
+	for(auto e : white_test_points)
+	{
+		error += img.computePointError(e, WHITE, projections);
+	}
 }
 
 void evaluateGreenPoints(MantisImage& img, int& projections, double& error)
 {
-
+	for(auto e : green_test_points)
+	{
+		error += img.computePointError(e, GREEN, projections);
+	}
 }
 
 void evaluateRedPoints(MantisImage& img, int& projections, double& error)
 {
+	for(auto e : red_test_points)
+	{
+		error += img.computePointError(e, RED, projections);
+	}
+}
+
+void evaluateMantisImage(MantisImage& img, int& projections, double& error, bool colorOnly = false){
+	evaluateRedPoints(img, projections, error);
+	evaluateGreenPoints(img, projections, error);
+
+	if(!colorOnly){evaluateWhitePoints(img, projections, error);}
+}
+
+void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = false){
+
+	int projections = 0;
+	double error = 0; // this will be per pixel
+
+	// set up the local hypothesis for each mantis camera
+	hyp.measurement->img1.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img1.b2c);
+	hyp.measurement->img2.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img2.b2c);
+	hyp.measurement->img3.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img3.b2c);
+
+	evaluateMantisImage(hyp.measurement->img1, projections, error, colorOnly);
+	evaluateMantisImage(hyp.measurement->img2, projections, error, colorOnly);
+	evaluateMantisImage(hyp.measurement->img3, projections, error, colorOnly);
+
+	ROS_DEBUG_STREAM("evaluated hypothesis. projection count: " << projections);
+
+	//TODO add projection bias
+	hyp.error = error / (double)projections;
 
 }
 
