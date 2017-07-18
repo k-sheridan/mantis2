@@ -1,0 +1,12 @@
+<launch>
+
+<param name="use_sim_time" value="true" />
+
+<node name="image_proc" pkg="image_proc" type="image_proc" ns="bottom_camera"/>
+<node name="image_proc" pkg="image_proc" type="image_proc" ns="front_camera"/>
+<node name="image_proc" pkg="image_proc" type="image_proc" ns="back_camera"/>
+
+
+<node name="mantis2_node" pkg="mantis2" type="mantis2_node" output="screen"/>
+
+</launch>
