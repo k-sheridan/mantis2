@@ -52,6 +52,8 @@ public:
 
 	tf::Vector3 getMostProbablePosition();
 
+	void convolve(double dx, double dy);
+
 	double computeEntropy();
 };
 

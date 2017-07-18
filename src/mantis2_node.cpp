@@ -39,6 +39,11 @@
 
 #include "mantis2/Mantis2Types.h"
 
+std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; // error test points
+#include "mantis2/GridTestPointGeneration.h" // function to generate the testpoints
+
+#include "mantis2/HypothesisError.h"
+
 #include "mantis2/YawMarkov.h"
 
 #include "mantis2/XYMarkovModel.h"
@@ -48,9 +53,6 @@ tf::TransformListener* tf_listener;
 BaseFrameHypothesis currentBestPoseEstimate;
 
 XYMarkovModel xy_markov_model;
-
-std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; // error test points
-#include "mantis2/GridTestPointGeneration.h" // function to generate the testpoints
 
 cv::Mat get3x3FromVector(boost::array<double, 9> vec)
 {
@@ -143,6 +145,8 @@ int main(int argc, char **argv)
 		ros::shutdown();
 		return 1;
 	}
+
+	ROS_ASSERT((POINT_ERROR_KERNEL_SIZE % 2) && POINT_ERROR_KERNEL_SIZE != 0);
 
 	//start the program
 	ros::spin();

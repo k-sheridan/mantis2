@@ -171,6 +171,8 @@ struct MantisImage{
 	ros::Time stamp;
 	tf::Transform b2c, c2b; // transform to and from the camera frame
 
+	Hypothesis thisHyp; // should be set for each
+
 	std::vector<std::vector<cv::Point> > raw_quads;
 
 	MantisImage(){
@@ -195,6 +197,73 @@ struct MantisImage{
 
 		b2c = tf::Transform(b2c_st);
 		c2b = b2c.inverse();
+	}
+
+	bool inFrame(cv::Point px){
+		if(px.x < img.cols && px.x >= 0 && px.y < img.rows && px.y >= 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	bool inFrame(cv::Point2d px){
+		if(px.x < img.cols && px.x >= 0 && px.y < img.rows && px.y >= 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	double computeColorError(cv::Vec3b meas, cv::Vec3i model)
+	{
+		int db = model[0] - meas[0];
+		int dg = model[1] - meas[1];
+		int dr = model[2] - meas[2];
+
+		return db*db + dg*dg + dr*dr;
+	}
+
+	/*
+	 * computes the point error
+	 * adds 1 to projections if it is projected
+	 */
+	double computePointError(tf::Vector3 world_pos, cv::Vec3i model_color, int& projections)
+	{
+		cv::Point2d raw = thisHyp.projectPoint(world_pos, this->K);
+		cv::Point center = cv::Point(raw.x, raw.y);
+		if(inFrame(center))
+		{
+			int sub_proj = 0;
+			double sub_error = 0;
+
+			for(int i = -POINT_ERROR_KERNEL_SIZE; i <= POINT_ERROR_KERNEL_SIZE; i++)
+			{
+				for(int j = -POINT_ERROR_KERNEL_SIZE; j <= POINT_ERROR_KERNEL_SIZE; j++){
+					cv::Point test = cv::Point(center.x + j, center.y + i);
+					if(inFrame(test))
+					{
+						sub_proj++;
+						sub_error += computeColorError(model_color, this->img.at<cv::Vec3b>(test));
+					}
+				}
+			}
+
+			projections++;
+
+
+			return sub_proj / (double)sub_proj;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	/*
