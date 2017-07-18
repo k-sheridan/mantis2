@@ -213,6 +213,7 @@ struct Measurement{
 	int detectQuadrilaterals()
 	{
 		int quads = detectQuadrilaterals(img1);
+		quads += detectQuadrilaterals(img2);
 
 		return quads;
 	}
@@ -227,8 +228,10 @@ struct Measurement{
 
 		cv::GaussianBlur(mono, mono, CANNY_BLUR_KERNEL, CANNY_BLUR_SIGMA);
 		cv::Canny(mono, canny, CANNY_HYSTERESIS, 3 * CANNY_HYSTERESIS, 3);
-		//cv::dilate(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
-		//cv::erode(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
+#if FILL_CANNY_GAPS
+		cv::dilate(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
+		cv::erode(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
+#endif
 
 		std::vector<std::vector<cv::Point> > contours;
 
@@ -258,6 +261,8 @@ struct Measurement{
 		}
 		cv::imshow("canny", canny);
 		cv::waitKey(30);
+		ros::Duration dur(1);
+		dur.sleep();
 #endif
 
 		ROS_DEBUG_STREAM("detected " << img.raw_quads.size() << " quads");

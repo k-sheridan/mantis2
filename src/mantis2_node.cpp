@@ -39,7 +39,12 @@
 
 #include "mantis2/Mantis2Types.h"
 
+#include "mantis2/YawMarkov.h"
+
 tf::TransformListener* tf_listener;
+
+std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; // error test points
+#include "mantis2/GridTestPointGeneration.h" // function to generate the testpoints
 
 cv::Mat get3x3FromVector(boost::array<double, 9> vec)
 {
@@ -65,7 +70,7 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 	measurement.img2 = MantisImage(cv_bridge::toCvCopy(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp);
 	measurement.img3 = MantisImage(cv_bridge::toCvCopy(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp);
 
-	measurement.detectQuadrilaterals(); // find quadrilaterals in all 3 images
+	measurement.detectQuadrilaterals(measurement.img1); // find quadrilaterals in image 1
 
 	ROS_DEBUG("mantis2 end");
 }
@@ -78,6 +83,9 @@ int main(int argc, char **argv)
 
 	//setup the tf listener
 	tf_listener = new tf::TransformListener();
+
+	//generate the testpoints
+	computeTestPoints();
 
 	//setup message filter
 	std::stringstream ss;

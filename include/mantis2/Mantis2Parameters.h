@@ -15,10 +15,24 @@
 #define FRONT_CAMERA_NS "front_camera"
 #define BACK_CAMERA_NS "back_camera"
 
+#define BASE_FRAME "base_link"
+#define WORLD_FRAME "world"
+
+#define GRID_WIDTH 20
+#define GRID_HEIGHT 20
+#define GRID_SPACING 1.0
+#define LINE_THICKNESS 0.05
+
+//how much to split the nodes by integer
+#define TEST_POINT_SPLIT_COUNT 2
+
 #define DO_RED_GREEN_TRICK false
 
 // the inverse scaling factor for quad detection
 #define QUAD_DETECTION_INV_SCALE 4
+
+//use erode and dilate t fill gaps
+#define FILL_CANNY_GAPS false
 
 //minimum quad area in pixels
 #define MINIMUM_CONTOUR_AREA 300
@@ -32,6 +46,15 @@
 
 // polygon eps for quad approx
 #define POLYGON_EPSILON 10
+
+
+//ERROR CALCULATION
+// search the surrounding 5 pixels to compute a points error
+#define POINT_ERROR_KERNEL_SIZE 5
+
+#define WHITE cv::Vec3i(255, 255, 255)
+#define RED cv::Vec3i(0, 0, 255)
+#define GREEN cv::Vec3i(0, 255, 0)
 
 
 #endif /* MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_ */
