@@ -48,7 +48,7 @@ public:
 
 	void checkAndFixMinimums();
 
-	int XY2index(tf::Vector3 pos);
+	int XY2index(tf::Vector3& pos);
 
 	cv::Mat_<double> computeSense(std::vector<BaseFrameHypothesis>& hyps);
 

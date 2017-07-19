@@ -128,12 +128,44 @@ void XYMarkovModel::normalize(cv::Mat_<double>& model)
 	}
 }
 
-int XYMarkovModel::XY2index(tf::Vector3 pos)
+/*
+ * returns -1 ifout of model bounds
+ */
+int XYMarkovModel::XY2index(tf::Vector3& pos)
 {
+	if(pos.x() >= minX  && pos.y() >= minY && pos.x() <= maxX && pos.y() <= maxY)
+	{
+		int j = (int)((pos.x() + maxX) / XY_MARKOV_RESOLUTION);
+		int i = (int)((pos.y() + maxY) / XY_MARKOV_RESOLUTION);
 
+		ROS_ASSERT(i >= 0 && i < this->P.rows && j >= 0 && j < this->P.cols);
+
+		return j + i*this->P.cols; // this is the index where this vector fits
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 cv::Mat_<double> XYMarkovModel::computeSense(std::vector<BaseFrameHypothesis>& hyps){
+
+	cv::Mat_<double> sense = cv::Mat::zeros(this->P.rows, this->P.cols, CV_64F);
+
+	for(auto& e : hyps)
+	{
+		int index = this->XY2index(e.getW2B().getOrigin());
+		if(index != -1)
+		{
+			//TODO potential factor in projection count
+			if(e.error == 0){e.error = 0.0000001;}
+			sense(index) += 1.0 / e.error;
+		}
+		else
+		{
+			ROS_DEBUG("hypothesis outside of markov model not added");
+		}
+	}
 
 }
 

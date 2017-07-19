@@ -137,10 +137,18 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 		ROS_DEBUG("evaluating all shifts");
 		evaluateBaseFrameHypotheses(allMarkovModelPositions, false);
 		ROS_DEBUG("finished evaluating");
+
+		ROS_DEBUG("generating the markov sense model");
+		cv::Mat_<double> sense_model = xy_markov_model.computeSense(allMarkovModelPositions);
+		ROS_DEBUG("done computing markov sense model");
+
+#if SUPER_DEBUG
+		xy_markov_model.viewModel(sense_model);
+#endif
 	}
 
 
-#if SUPER_DEBUG
+#if ULTRA_DEBUG
 	//test hypothesis
 	//cv::imshow("test", measurement.img2.img);
 	//cv::waitKey(30);
