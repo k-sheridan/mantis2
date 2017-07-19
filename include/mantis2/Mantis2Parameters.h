@@ -9,7 +9,7 @@
 #define MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_
 
 #define ULTRA_DEBUG false
-#define SUPER_DEBUG false
+#define SUPER_DEBUG true
 
 #define BOTTOM_CAMERA_NS "bottom_camera"
 #define FRONT_CAMERA_NS "front_camera"
@@ -25,6 +25,10 @@
 
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
+
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 20
+#define NUMBER_RANDOM_RED_TEST_POINTS 10
+#define NUMBER_RANDOM_GREEN_TEST_POINTS 10
 
 #define DO_RED_GREEN_TRICK false
 
@@ -55,7 +59,7 @@
 
 //ERROR CALCULATION
 // search the surrounding 5 pixels to compute a points error
-#define POINT_ERROR_KERNEL_SIZE 5
+#define POINT_ERROR_KERNEL_SIZE 3
 
 #define WHITE cv::Vec3i(255, 255, 255)
 #define RED cv::Vec3i(0, 0, 255)
@@ -63,9 +67,9 @@
 
 
 //MARKOV
-#define XY_MARKOV_RESOLUTION 0.1
+#define XY_MARKOV_RESOLUTION 1.0
 // howmany nodes to pad the edges by
-#define XY_MARKOV_EDGE_PADDING 10
+#define XY_MARKOV_EDGE_PADDING 1
 #define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
 
 

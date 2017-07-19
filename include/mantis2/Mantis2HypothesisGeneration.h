@@ -28,7 +28,7 @@ std::vector<BaseFrameHypothesis> generateAllXYShiftedHypotheses(BaseFrameHypothe
 
 	for(double x = minX; x < maxX; x += XY_MARKOV_RESOLUTION)
 	{
-		for(double y = minY; y < maxY; x += XY_MARKOV_RESOLUTION)
+		for(double y = minY; y < maxY; y += XY_MARKOV_RESOLUTION)
 		{
 			BaseFrameHypothesis bfhyp = initial_guess;
 

@@ -30,29 +30,33 @@
 
 #include "mantis2/Mantis2Types.h"
 
+#include <algorithm>
+#include <random>
+
+auto engine = std::default_random_engine{}; // for random shuffling of vector
 
 
 void evaluateWhitePoints(MantisImage& img, int& projections, double& error)
 {
-	for(auto e : white_test_points)
+	for(std::vector<tf::Vector3>::iterator it = white_test_points.begin(); it != white_test_points.begin() + NUMBER_RANDOM_WHITE_TEST_POINTS; it++)
 	{
-		error += img.computePointError(e, WHITE, projections);
+		error += img.computePointError(*it, WHITE, projections);
 	}
 }
 
 void evaluateGreenPoints(MantisImage& img, int& projections, double& error)
 {
-	for(auto e : green_test_points)
+	for(std::vector<tf::Vector3>::iterator it = green_test_points.begin(); it != green_test_points.begin() + NUMBER_RANDOM_GREEN_TEST_POINTS; it++)
 	{
-		error += img.computePointError(e, GREEN, projections);
+		error += img.computePointError(*it, GREEN, projections);
 	}
 }
 
 void evaluateRedPoints(MantisImage& img, int& projections, double& error)
 {
-	for(auto e : red_test_points)
+	for(std::vector<tf::Vector3>::iterator it = red_test_points.begin(); it != red_test_points.begin() + NUMBER_RANDOM_RED_TEST_POINTS; it++)
 	{
-		error += img.computePointError(e, RED, projections);
+		error += img.computePointError(*it, RED, projections);
 	}
 }
 
@@ -92,15 +96,28 @@ void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = fals
 
 }
 
+void evaluateBaseFrameHypotheses(std::vector<BaseFrameHypothesis>& hyps, bool colorOnly = false)
+{
+	//shuffle the test points for a random sample of them
+	std::shuffle(std::begin(white_test_points), std::end(white_test_points), engine);
+	std::shuffle(std::begin(red_test_points), std::end(red_test_points), engine);
+	std::shuffle(std::begin(green_test_points), std::end(green_test_points), engine);
+
+	for(auto& e : hyps)
+	{
+		evaluateBaseFrameHypothesis(e, colorOnly);
+	}
+}
+
 void visualizeHypothesis(BaseFrameHypothesis hyp, MantisImage img)
 {
 	cv::Mat final = img.img;
 
 	img.thisHyp.setW2C(hyp.getW2B() * img.b2c);
 
-	for(auto e : white_test_points)
+	for(std::vector<tf::Vector3>::iterator it = white_test_points.begin(); it != white_test_points.begin() + NUMBER_RANDOM_WHITE_TEST_POINTS; it++)
 	{
-		cv::drawMarker(final, img.thisHyp.projectPoint(e, img.K), cv::Scalar(0, 255, 255), cv::MarkerTypes::MARKER_CROSS);
+		cv::drawMarker(final, img.thisHyp.projectPoint(*it, img.K), cv::Scalar(0, 255, 255), cv::MarkerTypes::MARKER_CROSS);
 	}
 
 	cv::imshow("hypo estimate", final);

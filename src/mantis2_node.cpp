@@ -114,7 +114,7 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 	else
 	{
 		//TODO further evaluate quads
-		quadrilaterals_good = true;
+		quadrilaterals_good = false;
 		// generate central hypotheses with yaw closest to our current guess
 		//cluster hypos by z
 		//get the largest cluster and generate possible hypotheses for each
@@ -133,6 +133,10 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 	{
 		ROS_DEBUG("generating all xy shifts");
 		std::vector<BaseFrameHypothesis> allMarkovModelPositions = generateAllXYShiftedHypotheses(currentPoseGuess);
+
+		ROS_DEBUG("evaluating all shifts");
+		evaluateBaseFrameHypotheses(allMarkovModelPositions, false);
+		ROS_DEBUG("finished evaluating");
 	}
 
 
@@ -208,6 +212,10 @@ int main(int argc, char **argv)
 		ros::shutdown();
 		return 1;
 	}
+
+	// check stuff
+	ROS_ASSERT((GRID_HEIGHT - 2) * TEST_POINT_SPLIT_COUNT * GRID_WIDTH * TEST_POINT_SPLIT_COUNT >= NUMBER_RANDOM_WHITE_TEST_POINTS);
+	ROS_ASSERT(GRID_WIDTH * TEST_POINT_SPLIT_COUNT >= NUMBER_RANDOM_GREEN_TEST_POINTS && GRID_WIDTH * TEST_POINT_SPLIT_COUNT >= NUMBER_RANDOM_RED_TEST_POINTS);
 
 	//start the program
 	ros::spin();

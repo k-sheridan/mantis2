@@ -8,11 +8,22 @@
 #include "XYMarkovModel.h"
 
 XYMarkovModel::XYMarkovModel() {
-	// TODO Auto-generated constructor stub
+	int cols = ((GRID_WIDTH * GRID_SPACING) / (double)XY_MARKOV_RESOLUTION) + (XY_MARKOV_EDGE_PADDING);
+	int rows = ((GRID_HEIGHT * GRID_SPACING) / (double)XY_MARKOV_RESOLUTION) + (XY_MARKOV_EDGE_PADDING);
+
+	this->P = cv::Mat(rows, cols, CV_64F); // create the model
 
 }
 
 XYMarkovModel::~XYMarkovModel() {
-	// TODO Auto-generated destructor stub
+
+}
+
+void XYMarkovModel::makeUniform(){
+
+}
+
+double XYMarkovModel::computeEntropy(){
+
 }
 
