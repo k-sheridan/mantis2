@@ -180,9 +180,21 @@ cv::Mat XYMarkovModel::renderModel(cv::Mat_<double> model)
 	cv::Mat mono = cv::Mat(model.rows, model.cols, CV_8U);
 
 	int size = model.rows*model.cols;
+
+	double max = 0;
 	for(int i = 0; i < size; i++)
 	{
-		mono.at<uchar>(i) = (uchar)(model(i)*255);
+		if(model(i) > max)
+		{
+			max = model(i);
+		}
+	}
+
+	double scale = 255.0 / max;
+
+	for(int i = 0; i < size; i++)
+	{
+		mono.at<uchar>(i) = (uchar)(model(i)*scale);
 	}
 
 	return mono;
