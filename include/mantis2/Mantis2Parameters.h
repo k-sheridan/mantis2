@@ -26,7 +26,7 @@
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
 
-#define NUMBER_RANDOM_WHITE_TEST_POINTS 60
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 100
 #define NUMBER_RANDOM_RED_TEST_POINTS 20
 #define NUMBER_RANDOM_GREEN_TEST_POINTS 20
 
@@ -71,6 +71,15 @@
 // howmany nodes to pad the edges by
 #define XY_MARKOV_EDGE_PADDING 2
 #define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
+
+//if during a convolution the node the convolve is from doesnt exist the node equals the current node probablility times this
+#define NONEXISTANT_NODE_MULTIPLIER 0.1
+
+//blur sigma multiplier for convolve ( this * move mag)
+#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 1.0
+
+//scale factor for sub pixel convolution
+#define CONVOLUTION_RESOLUTION_SCALE 4
 
 
 

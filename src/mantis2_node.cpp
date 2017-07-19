@@ -145,6 +145,12 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 #if SUPER_DEBUG
 		xy_markov_model.viewModel(sense_model);
 #endif
+
+		xy_markov_model.convolve(dr.x(), dr.y());
+
+#if SUPER_DEBUG
+		xy_markov_model.viewModel(xy_markov_model.P);
+#endif
 	}
 
 

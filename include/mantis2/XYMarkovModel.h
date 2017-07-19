@@ -48,9 +48,13 @@ public:
 
 	void checkAndFixMinimums();
 
+	bool checkIndex(int i, int j, cv::Mat_<double> test){return (i >= 0 && j >= 0 && i < test.rows && j < test.cols);}
+
 	int XY2index(tf::Vector3& pos);
 
 	cv::Mat_<double> computeSense(std::vector<BaseFrameHypothesis>& hyps);
+
+	void updateModel(cv::Mat_<double> sense);
 
 	cv::Mat_<double> multiply(cv::Mat_<double> P, cv::Mat_<double> sense);
 

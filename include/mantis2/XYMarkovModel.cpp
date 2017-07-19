@@ -173,6 +173,55 @@ cv::Mat_<double> XYMarkovModel::computeSense(std::vector<BaseFrameHypothesis>& h
 
 }
 
+void XYMarkovModel::convolve(double dx, double dy)
+{
+	//++ at 0, 0
+	// -- at rows, cols
+
+	int dj = dx / ((double)XY_MARKOV_RESOLUTION / (double)CONVOLUTION_RESOLUTION_SCALE);
+	int di = dy / ((double)XY_MARKOV_RESOLUTION / (double)CONVOLUTION_RESOLUTION_SCALE);
+
+	ROS_DEBUG_STREAM("position change to convolve: " << dx << ", " << dy);
+	ROS_DEBUG_STREAM("convolving with delta index: " << di << ", " << dj);
+
+	if(di == 0 && dj == 0)
+	{
+		ROS_DEBUG("convolve kernel has no change");
+		return;
+	}
+
+	// create a new place to store the convolution
+	cv::Mat_<double> convolution = cv::Mat(this->P.rows, this->P.cols, this->P.type());
+
+	// create the scaled model
+	cv::Mat_<double> scaled_model;
+	// this allows for fine movements to be convolved
+	cv::resize(this->P, scaled_model, cv::Size(CONVOLUTION_RESOLUTION_SCALE * this->P.cols, CONVOLUTION_RESOLUTION_SCALE * this->P.rows));
+
+
+	for(int i = 0; i < this->P.rows; i++)
+	{
+		for(int j = 0; j < this->P.cols; j++)
+		{
+			int pull_i = CONVOLUTION_RESOLUTION_SCALE*i + di;
+			int pull_j = CONVOLUTION_RESOLUTION_SCALE*j + dj;
+
+			if(checkIndex(pull_i, pull_j, scaled_model))
+			{
+				convolution(i, j) = scaled_model(pull_i, pull_j);
+			}
+			else
+			{
+				convolution(i, j) = this->P(i, j) * NONEXISTANT_NODE_MULTIPLIER;
+			}
+		}
+	}
+
+
+	//gaussian blur the convolution based on move magnitude
+	cv::GaussianBlur(convolution, this->P, cv::Size(0, 0), (sqrt(dx*dx+dy*dy) * (1.0 / (double)XY_MARKOV_RESOLUTION) * CONVOLVE_BLUR_SIGMA_MULTIPLIER));
+}
+
 cv::Mat XYMarkovModel::renderModel(cv::Mat_<double> model)
 {
 	this->normalize(model);
