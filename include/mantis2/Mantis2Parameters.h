@@ -26,9 +26,9 @@
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
 
-#define NUMBER_RANDOM_WHITE_TEST_POINTS 40
-#define NUMBER_RANDOM_RED_TEST_POINTS 5
-#define NUMBER_RANDOM_GREEN_TEST_POINTS 5
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 60
+#define NUMBER_RANDOM_RED_TEST_POINTS 20
+#define NUMBER_RANDOM_GREEN_TEST_POINTS 20
 
 #define DO_RED_GREEN_TRICK false
 
@@ -59,7 +59,7 @@
 
 //ERROR CALCULATION
 // search the surrounding 5 pixels to compute a points error
-#define POINT_ERROR_KERNEL_SIZE 3
+#define POINT_ERROR_KERNEL_SIZE 2
 
 #define WHITE cv::Vec3i(255, 255, 255)
 #define RED cv::Vec3i(0, 0, 255)

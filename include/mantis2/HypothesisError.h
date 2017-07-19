@@ -93,7 +93,7 @@ void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = fals
 	{
 		hyp.error = error / (double)projections;
 
-		ROS_DEBUG_STREAM("ppe: " << hyp.error);
+		//ROS_DEBUG_STREAM("ppe: " << hyp.error);
 	}
 
 }
