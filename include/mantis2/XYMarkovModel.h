@@ -35,14 +35,20 @@ public:
 	cv::Mat_<double> P; // this is the model
 	double entropy;
 
+	double minX, minY, maxX, maxY;
+
 	XYMarkovModel();
 	virtual ~XYMarkovModel();
 
 	void normalize();
 
+	void normalize(cv::Mat_<double>& model);
+
 	void makeUniform();
 
 	void checkAndFixMinimums();
+
+	int XY2index(tf::Vector3 pos);
 
 	cv::Mat_<double> computeSense(std::vector<BaseFrameHypothesis>& hyps);
 
@@ -55,6 +61,9 @@ public:
 	void convolve(double dx, double dy);
 
 	double computeEntropy();
+
+	cv::Mat renderModel(cv::Mat_<double> model);
+	void viewModel(cv::Mat_<double> model);
 };
 
 #endif /* MANTIS2_INCLUDE_MANTIS2_XYMARKOVMODEL_H_ */

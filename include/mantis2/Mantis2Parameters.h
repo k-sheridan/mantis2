@@ -67,9 +67,9 @@
 
 
 //MARKOV
-#define XY_MARKOV_RESOLUTION 1.0
+#define XY_MARKOV_RESOLUTION 0.5
 // howmany nodes to pad the edges by
-#define XY_MARKOV_EDGE_PADDING 1
+#define XY_MARKOV_EDGE_PADDING 2
 #define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
 
 

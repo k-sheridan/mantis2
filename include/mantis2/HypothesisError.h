@@ -81,7 +81,7 @@ void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = fals
 	evaluateMantisImage(hyp.measurement->img2, projections, error, colorOnly);
 	evaluateMantisImage(hyp.measurement->img3, projections, error, colorOnly);
 
-	ROS_DEBUG_STREAM("evaluated hypothesis. projection count: " << projections);
+	//ROS_DEBUG_STREAM("evaluated hypothesis. projection count: " << projections);
 
 
 	//TODO add projection bias

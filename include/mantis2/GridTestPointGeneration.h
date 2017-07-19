@@ -41,16 +41,16 @@ void computeTestPoints()
 				if(yline == 0) // red
 				{
 					red_test_points.push_back(tf::Vector3(x, y, 0.0));
-					ROS_DEBUG_STREAM("RED: " << x << ", " << y);
+					//ROS_DEBUG_STREAM("RED: " << x << ", " << y);
 				}
 				else if(yline == GRID_HEIGHT)
 				{
 					green_test_points.push_back(tf::Vector3(x, y, 0.0));
-					ROS_DEBUG_STREAM("GREEN: " << x << ", " << y);
+					//ROS_DEBUG_STREAM("GREEN: " << x << ", " << y);
 				}
 				else{
 					white_test_points.push_back(tf::Vector3(x, y, 0.0));
-					ROS_DEBUG_STREAM("WHITE: " << x << ", " << y);
+					//ROS_DEBUG_STREAM("WHITE: " << x << ", " << y);
 				}
 
 				yline++;
@@ -64,16 +64,16 @@ void computeTestPoints()
 				if(yline == 0) // red
 				{
 					red_test_points.push_back(tf::Vector3(x, y, 0.0));
-					ROS_DEBUG_STREAM("RED: " << x << ", " << y);
+					//ROS_DEBUG_STREAM("RED: " << x << ", " << y);
 				}
 				else if(yline == GRID_HEIGHT * TEST_POINT_SPLIT_COUNT)
 				{
 					green_test_points.push_back(tf::Vector3(x, y, 0.0));
-					ROS_DEBUG_STREAM("GREEN: " << x << ", " << y);
+					//ROS_DEBUG_STREAM("GREEN: " << x << ", " << y);
 				}
 				else{
 					white_test_points.push_back(tf::Vector3(x, y, 0.0));
-					ROS_DEBUG_STREAM("WHITE: " << x << ", " << y);
+					//ROS_DEBUG_STREAM("WHITE: " << x << ", " << y);
 				}
 
 				yline++;
