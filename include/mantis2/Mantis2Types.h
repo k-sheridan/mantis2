@@ -297,20 +297,31 @@ struct MantisImage{
 struct Measurement{
 	MantisImage img1, img2, img3;
 
-
+	int detectQuadrilaterals(){
+		int quads = 0;
+		quads += detectQuadrilaterals(img1);
+#if DETECT_QUADS_WITH_ALL_IMAGES // we should use all images for quad detection
+		quads += detectQuadrilaterals(img2);
+		quads += detectQuadrilaterals(img3);
+#endif
+		return quads;
+	}
 
 	int detectQuadrilaterals(MantisImage& img)
 	{
 		cv::Mat mono, scaled, canny;
 
+#if QUAD_DETECTION_INV_SCALE != 1
 		cv::resize(img.img, scaled, cv::Size(img.img.cols / QUAD_DETECTION_INV_SCALE, img.img.rows / QUAD_DETECTION_INV_SCALE)); // resize the image to reduce computationaly burden.
-
+#else
+		scaled = img.img;
+#endif
 		mono = img.computeMonoImage(scaled); // get G&R -> mono image
 
 		cv::GaussianBlur(mono, mono, CANNY_BLUR_KERNEL, CANNY_BLUR_SIGMA);
 		cv::Canny(mono, canny, CANNY_HYSTERESIS, 3 * CANNY_HYSTERESIS, 3);
 #if FILL_CANNY_GAPS
-		cv::dilate(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
+		cv::dilate(canny, canny, cv::Mat(), cv::Point(-1, -1), 2);
 		cv::erode(canny, canny, cv::Mat(), cv::Point(-1, -1), 1);
 #endif
 
@@ -342,7 +353,7 @@ struct Measurement{
 		}
 		cv::imshow("canny", canny);
 		cv::waitKey(30);
-		ros::Duration dur(1);
+		ros::Duration dur(0.1);
 		dur.sleep();
 #endif
 

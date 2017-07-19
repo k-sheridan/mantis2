@@ -76,11 +76,12 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 	//lookup camera from base tfs
 
 	//form all MantisImages
-	measurement.img1 = MantisImage(cv_bridge::toCvCopy(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp, tf_listener);
-	measurement.img2 = MantisImage(cv_bridge::toCvCopy(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp, tf_listener);
-	measurement.img3 = MantisImage(cv_bridge::toCvCopy(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp, tf_listener);
+	//TODO make sure shared data is not buggy
+	measurement.img1 = MantisImage(cv_bridge::toCvShare(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp, tf_listener);
+	measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp, tf_listener);
+	measurement.img3 = MantisImage(cv_bridge::toCvShare(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp, tf_listener);
 
-	measurement.detectQuadrilaterals(measurement.img1); // find quadrilaterals in image 1
+	measurement.detectQuadrilaterals(); // find quadrilaterals
 
 	ROS_DEBUG("mantis2 end");
 }
