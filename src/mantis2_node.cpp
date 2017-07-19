@@ -44,6 +44,8 @@ std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; 
 
 #include "mantis2/HypothesisError.h"
 
+#include "mantis2/Mantis2HypothesisGeneration.h"
+
 #include "mantis2/YawMarkov.h"
 
 #include "mantis2/XYMarkovModel.h"
@@ -51,6 +53,7 @@ std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; 
 tf::TransformListener* tf_listener;
 
 BaseFrameHypothesis currentBestPoseEstimate;
+BaseFrameHypothesis lastPoseGuess;
 
 XYMarkovModel xy_markov_model;
 
@@ -68,20 +71,79 @@ cv::Mat get3x3FromVector(boost::array<double, 9> vec)
 	return mat;
 }
 
+#define DATASET_FIX "front_camera"
+
 void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraInfoConstPtr& cam1, const sensor_msgs::ImageConstPtr& img2, const sensor_msgs::CameraInfoConstPtr& cam2, const sensor_msgs::ImageConstPtr& img3, const sensor_msgs::CameraInfoConstPtr& cam3)
 {
 	ROS_DEBUG("mantis2 start");
 	Measurement measurement;
 
-	//lookup camera from base tfs
+	//lookup the current best guess for pose
+	tf::StampedTransform w2b_st;
+	try {
+		tf_listener->lookupTransform(WORLD_FRAME, BASE_FRAME,
+				img1->header.stamp, w2b_st);
+	} catch (tf::TransformException& e) {
+		ROS_ERROR_STREAM(e.what());
+		ROS_INFO("will use last guess as current guess");
+		w2b_st.setData(lastPoseGuess.getW2B()); // set current guess to last guess
+	}
+
+	BaseFrameHypothesis currentPoseGuess = BaseFrameHypothesis(tf::Transform(w2b_st));
+	tf::Vector3 dr = (currentPoseGuess.getW2B().getOrigin() - lastPoseGuess.getW2B().getOrigin());
 
 	//form all MantisImages
 	//TODO make sure shared data is not buggy
 	measurement.img1 = MantisImage(cv_bridge::toCvShare(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp, tf_listener);
-	measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp, tf_listener);
+	//measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp, tf_listener);
+	//TODO remove after dataset is fixed
+	measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), DATASET_FIX, img2->header.stamp, tf_listener);
 	measurement.img3 = MantisImage(cv_bridge::toCvShare(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp, tf_listener);
 
-	measurement.detectQuadrilaterals(); // find quadrilaterals
+	currentPoseGuess.measurement = &measurement; // give the currentPoseGuess the measurement
+
+	int quad_count = measurement.detectQuadrilaterals(); // find quadrilaterals
+
+	//now we must determine if our detected quads are good enough to be factored into the markov model sense
+	bool quadrilaterals_good = true;
+	BaseFrameHypothesis central_hypothesis; // if we use quadrilaterals to break down the problem this is the central hypothesis
+	if(quad_count < MINIMUM_QUADRILATERALS)
+	{
+		quadrilaterals_good = false; // skip the rest of the quad calculations
+	}
+	else
+	{
+		//TODO further evaluate quads
+		quadrilaterals_good = true;
+		// generate central hypotheses with yaw closest to our current guess
+		//cluster hypos by z
+		//get the largest cluster and generate possible hypotheses for each
+	}
+
+
+	//we now have two cases for evaluation
+
+	//case 1 evaluate the xy markov model using all possiblepositions based on the top N quadrilaterals
+	if(quadrilaterals_good)
+	{
+
+	}
+	//case 2 evaluate each node in the markov model and use the z height and angle from the guess
+	else
+	{
+		ROS_DEBUG("generating all xy shifts");
+		std::vector<BaseFrameHypothesis> allMarkovModelPositions = generateAllXYShiftedHypotheses(currentPoseGuess);
+	}
+
+
+#if SUPER_DEBUG
+	//test hypothesis
+	//cv::imshow("test", measurement.img2.img);
+	//cv::waitKey(30);
+	visualizeHypothesis(currentPoseGuess, measurement.img2);
+#endif
+
+	lastPoseGuess = currentPoseGuess;
 
 	ROS_DEBUG("mantis2 end");
 }
@@ -137,7 +199,7 @@ int main(int argc, char **argv)
 			ROS_WARN_STREAM(e.what());
 		}
 		tf::Transform pose = tf::Transform(w2b);
-		currentBestPoseEstimate = BaseFrameHypothesis(pose);
+		currentBestPoseEstimate = lastPoseGuess = BaseFrameHypothesis(pose);
 		ROS_INFO_STREAM("GOT TRANSFORM WITH INITIAL POS OF: " << pose.getOrigin().x() << ", " << pose.getOrigin().y() << ", " << pose.getOrigin().z());
 	}
 	else
@@ -146,8 +208,6 @@ int main(int argc, char **argv)
 		ros::shutdown();
 		return 1;
 	}
-
-	ROS_ASSERT((POINT_ERROR_KERNEL_SIZE % 2) && POINT_ERROR_KERNEL_SIZE != 0);
 
 	//start the program
 	ros::spin();

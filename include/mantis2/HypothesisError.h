@@ -79,12 +79,32 @@ void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = fals
 
 	ROS_DEBUG_STREAM("evaluated hypothesis. projection count: " << projections);
 
+
 	//TODO add projection bias
-	hyp.error = error / (double)projections;
+	if(projections == 0)
+	{
+		hyp.error = DBL_MAX;
+	}
+	else
+	{
+		hyp.error = error / (double)projections;
+	}
 
 }
 
+void visualizeHypothesis(BaseFrameHypothesis hyp, MantisImage img)
+{
+	cv::Mat final = img.img;
 
+	img.thisHyp.setW2C(hyp.getW2B() * img.b2c);
 
+	for(auto e : white_test_points)
+	{
+		cv::drawMarker(final, img.thisHyp.projectPoint(e, img.K), cv::Scalar(0, 255, 255), cv::MarkerTypes::MARKER_CROSS);
+	}
+
+	cv::imshow("hypo estimate", final);
+	cv::waitKey(30);
+}
 
 #endif /* MANTIS2_INCLUDE_MANTIS2_HYPOTHESISERROR_H_ */

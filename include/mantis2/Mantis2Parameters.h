@@ -9,7 +9,7 @@
 #define MANTIS2_INCLUDE_MANTIS2_MANTIS2PARAMETERS_H_
 
 #define ULTRA_DEBUG false
-#define SUPER_DEBUG true
+#define SUPER_DEBUG false
 
 #define BOTTOM_CAMERA_NS "bottom_camera"
 #define FRONT_CAMERA_NS "front_camera"
@@ -37,7 +37,7 @@
 #define FILL_CANNY_GAPS true
 
 //minimum quad area in pixels
-#define MINIMUM_CONTOUR_AREA 300
+#define MINIMUM_CONTOUR_AREA 400
 
 // canny thresh for quad detect
 #define CANNY_HYSTERESIS 25
@@ -48,6 +48,9 @@
 
 // polygon eps for quad approx
 #define POLYGON_EPSILON 10
+
+//minimum quadrilaterals detected to use in markov model
+#define MINIMUM_QUADRILATERALS 5
 
 
 //ERROR CALCULATION

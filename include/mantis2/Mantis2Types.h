@@ -103,7 +103,7 @@ public:
 	tf::Vector3 projectPoint(tf::Vector3 in)
 	{
 		tf::Vector3 reproj = c2w * in;
-		ROS_DEBUG_COND(reproj.z() < 0, "WARNING! POINT IS BEHIND CAMERA");
+		//ROS_DEBUG_COND(reproj.z() < 0, "WARNING! POINT IS BEHIND CAMERA");
 		return reproj;
 	}
 
@@ -115,7 +115,11 @@ public:
 	{
 		tf::Vector3 reproj = projectPoint(in);
 
-		ROS_DEBUG_COND(reproj.z() < 0, "WARNING! POINT IS BEHIND CAMERA");
+		if(reproj.z() < 0)
+		{
+			return cv::Point2d(-1, -1);
+		}
+		//ROS_DEBUG_COND(reproj.z() < 0, "WARNING! POINT IS BEHIND CAMERA");
 
 		return point2Pixel(reproj, K);
 	}
@@ -192,6 +196,7 @@ struct MantisImage{
 		stamp = t;
 
 		//look up transform
+		ROS_DEBUG_STREAM("looking up from " << BASE_FRAME << " to " << frame << " for image");
 		tf::StampedTransform b2c_st;
 		try {
 			tf_list->lookupTransform(BASE_FRAME, frame,

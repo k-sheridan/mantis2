@@ -81,4 +81,4 @@ set_target_properties(hypErr PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(hypErr ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES} mantis2_params mantis2_types)
 
 add_executable(mantis2_node src/mantis2_node.cpp)
-target_link_libraries(mantis2_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES} mantis2_types mantis2_params testPointGen xyMarkov)
+target_link_libraries(mantis2_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen_LIBRARIES} mantis2_types mantis2_params testPointGen xyMarkov mantis2_hypoGen)

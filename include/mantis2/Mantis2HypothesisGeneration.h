@@ -12,132 +12,40 @@
 
 #include "Mantis2Parameters.h"
 
-#include "HypothesisEvaluation.h"
-
-
-std::vector<Hypothesis> generateCentralHypotheses(Quadrilateral quad, bool& pass);
-
 /*
- * give this undistorted quads in pixel space
+ * use the initial guess for rotation and z height
+ * initial guess must contain the measurement pointer
  */
-std::vector<Hypothesis> generateHypotheses(std::vector<Quadrilateral> quads, MantisImage img)
-				{
-	std::vector<Hypothesis> hyps;
+std::vector<BaseFrameHypothesis> generateAllXYShiftedHypotheses(BaseFrameHypothesis initial_guess)
+{
+	double minX = -(XY_MARKOV_EDGE_PADDING * XY_MARKOV_RESOLUTION) - ((GRID_WIDTH * GRID_SPACING) / 2.0)  + (XY_MARKOV_RESOLUTION / 2.0); // center of the node
+	double maxX = -minX;
 
-	for(auto e : quads)
+	double minY = -(XY_MARKOV_EDGE_PADDING * XY_MARKOV_RESOLUTION) - ((GRID_HEIGHT * GRID_SPACING) / 2.0) + (XY_MARKOV_RESOLUTION / 2.0);
+	double maxY = -minY;
+
+	std::vector<BaseFrameHypothesis> hyps;
+
+	for(double x = minX; x < maxX; x += XY_MARKOV_RESOLUTION)
 	{
-		bool pass = false;
-
-		std::vector<Hypothesis> central = generateCentralHypotheses(e, pass);
-
-		if(pass)
+		for(double y = minY; y < maxY; x += XY_MARKOV_RESOLUTION)
 		{
-			hyps.insert(hyps.end(), central.begin(), central.end());
+			BaseFrameHypothesis bfhyp = initial_guess;
+
+			//change the x an y of the origin
+			bfhyp.getW2B().getOrigin().setX(x);
+			bfhyp.getW2B().getOrigin().setY(y);
+
+			hyps.push_back(bfhyp);
 		}
-
-#if SUPER_DEBUG
-		//visualizeHypothesis(img.img.clone(), central.front(), e, img.K, img.D);
-
-		//ROS_DEBUG_STREAM("ERROR: " << evaluateHypothesis(central.front(), img));
-
-		//ROS_DEBUG_STREAM("estimate position: " << central.front().getPosition().x() << ", " << central.front().getPosition().y() << ", " << central.front().getPosition().z());
-
-		//ros::Duration sleep(0.1);
-		//sleep.sleep();
-#endif
 	}
+
+	ROS_DEBUG_STREAM("generated all possible hypotheses: " << hyps.size());
 
 	return hyps;
-				}
-
-/*
- * generates a hypothesis with the assumption that the quad is at
- * the center of the grid
- */
-std::vector<Hypothesis> generateCentralHypotheses(Quadrilateral quad, bool& pass){
-	Hypothesis hyp;
-	std::vector<Hypothesis> central;
-	CoPlanarPoseEstimator pe;
-
-	double error;
-
-	//ROS_DEBUG("estimating pose");
-	for(auto e : gridSquarePossibilities)
-	{
-		hyp.setC2W(pe.estimatePose(quad.test_points, e, error));
-		if(hyp.getPosition().z() >= 0)
-		{
-			ROS_DEBUG_STREAM("FOUND GOOD POSE");
-			break;
-		}
-		else
-		{
-			ROS_DEBUG_STREAM("FOUND BAD POSE");
-		}
-	}
-
-	//remove for high error
-	if(error > MAX_QUAD_ERROR)
-	{
-		ROS_DEBUG_STREAM("failed with error: " << error);
-		pass = false;
-		return central;
-	}
-	else
-	{
-		pass = true;
-	}
-
-	tf::Transform rotZ = tf::Transform(tf::Quaternion(0, 0, 1/sqrt(2), 1/sqrt(2)));
-
-	central.push_back(hyp);
-	hyp.setW2C(rotZ * central.back().getW2C());
-	central.push_back(hyp);
-	hyp.setW2C(rotZ * central.back().getW2C());
-	central.push_back(hyp);
-	hyp.setW2C(rotZ * central.back().getW2C());
-	central.push_back(hyp);
-
-
-
-	//ROS_DEBUG("estimated pose");
-
-
-	//hyp.setW2C(tf::Transform(tf::Quaternion(0, 0, 0, 1)));
-
-	return central;
 }
 
-Hypothesis shiftHypothesis(Hypothesis& hyp, tf::Vector3 delta){
-	Hypothesis newHyp;
 
-	tf::Transform newW2C = hyp.getW2C();
-	newW2C.getOrigin() += delta;
-
-	newHyp.setW2C(newW2C);
-
-	return newHyp;
-}
-
-/*
- * shifts the hypotheses to all possible positions
- */
-std::vector<Hypothesis> computeAllShiftedHypothesesFAST(Hypothesis hyp){
-
-	std::vector<Hypothesis> final;
-
-	for(double x = -((double)GRID_SIZE/2.0)*GRID_SPACING + ((double)GRID_SPACING/2.0); x < ((double)GRID_SIZE/2.0)*GRID_SPACING; x += GRID_SPACING)
-	{
-		for(double y = -((double)GRID_SIZE/2.0)*GRID_SPACING + ((double)GRID_SPACING/2.0); y < ((double)GRID_SIZE/2.0)*GRID_SPACING; y += GRID_SPACING)
-		{
-
-			final.push_back(shiftHypothesis(hyp, tf::Vector3(x, y, 0)));
-
-		}
-	}
-
-	return final;
-}
 
 
 #endif /* MANTIS_INCLUDE_MANTIS3_HYPOTHESISGENERATION_H_ */
