@@ -128,6 +128,27 @@ void XYMarkovModel::normalize(cv::Mat_<double>& model)
 	}
 }
 
+void XYMarkovModel::updateModel(cv::Mat_<double> sense){
+	this->P = this->multiply(this->P, sense);
+
+	this->checkAndFixMinimums();
+}
+
+cv::Mat_<double> XYMarkovModel::multiply(cv::Mat_<double> P, cv::Mat_<double> sense){
+	ROS_ASSERT(P.rows == sense.rows && P.cols == sense.cols);
+
+	int size = P.rows*P.cols;
+
+	cv::Mat_<double> out = P;
+
+	for(int i = 0; i < size; i++)
+	{
+		out(i) = P(i)*sense(i);
+	}
+
+	return out;
+}
+
 /*
  * returns -1 ifout of model bounds
  */
@@ -162,6 +183,8 @@ cv::Mat_<double> XYMarkovModel::computeSense(std::vector<BaseFrameHypothesis>& h
 			sense(index) += 1.0 / e.error;
 
 			//ROS_DEBUG_STREAM("error: " << e.error);
+			if(sense(index) < XY_MARKOV_MINIMUM_PROBABLILTY)
+				sense(index) = XY_MARKOV_MINIMUM_PROBABLILTY;
 		}
 		else
 		{
@@ -178,8 +201,8 @@ void XYMarkovModel::convolve(double dx, double dy)
 	//++ at 0, 0
 	// -- at rows, cols
 
-	int dj = dx / ((double)XY_MARKOV_RESOLUTION / (double)CONVOLUTION_RESOLUTION_SCALE);
-	int di = dy / ((double)XY_MARKOV_RESOLUTION / (double)CONVOLUTION_RESOLUTION_SCALE);
+	int dj = -dx / ((double)XY_MARKOV_RESOLUTION / (double)CONVOLUTION_RESOLUTION_SCALE);
+	int di = -dy / ((double)XY_MARKOV_RESOLUTION / (double)CONVOLUTION_RESOLUTION_SCALE);
 
 	ROS_DEBUG_STREAM("position change to convolve: " << dx << ", " << dy);
 	ROS_DEBUG_STREAM("convolving with delta index: " << di << ", " << dj);
@@ -220,6 +243,11 @@ void XYMarkovModel::convolve(double dx, double dy)
 
 	//gaussian blur the convolution based on move magnitude
 	cv::GaussianBlur(convolution, this->P, cv::Size(0, 0), (sqrt(dx*dx+dy*dy) * (1.0 / (double)XY_MARKOV_RESOLUTION) * CONVOLVE_BLUR_SIGMA_MULTIPLIER));
+
+	//fix minimums
+	this->checkAndFixMinimums();
+
+	this->normalize(); // finally normalize the model
 }
 
 cv::Mat XYMarkovModel::renderModel(cv::Mat_<double> model)

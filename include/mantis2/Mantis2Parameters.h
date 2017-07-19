@@ -76,10 +76,10 @@
 #define NONEXISTANT_NODE_MULTIPLIER 0.1
 
 //blur sigma multiplier for convolve ( this * move mag)
-#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 1.0
+#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 2.0
 
 //scale factor for sub pixel convolution
-#define CONVOLUTION_RESOLUTION_SCALE 4
+#define CONVOLUTION_RESOLUTION_SCALE 10
 
 
 
