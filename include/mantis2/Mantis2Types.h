@@ -300,14 +300,15 @@ struct MantisImage{
 
 
 struct Measurement{
-	MantisImage img1, img2, img3;
+	MantisImage bottom_img, img2, img3, img4;
 
 	int detectQuadrilaterals(){
 		int quads = 0;
-		quads += detectQuadrilaterals(img1);
+		quads += detectQuadrilaterals(bottom_img);
 #if DETECT_QUADS_WITH_ALL_IMAGES // we should use all images for quad detection
 		quads += detectQuadrilaterals(img2);
 		quads += detectQuadrilaterals(img3);
+		quads += detectQuadrilaterals(img4);
 #endif
 		return quads;
 	}

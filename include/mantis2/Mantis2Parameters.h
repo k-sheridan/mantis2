@@ -14,6 +14,7 @@
 #define BOTTOM_CAMERA_NS "bottom_camera"
 #define FRONT_CAMERA_NS "front_camera"
 #define BACK_CAMERA_NS "back_camera"
+#define LEFT_CAMERA_NS "left_camera"
 
 #define BASE_FRAME "base_link"
 #define WORLD_FRAME "world"
@@ -26,13 +27,15 @@
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
 
-#define NUMBER_RANDOM_WHITE_TEST_POINTS 10
-#define NUMBER_RANDOM_RED_TEST_POINTS 10
-#define NUMBER_RANDOM_GREEN_TEST_POINTS 10
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 20
+#define NUMBER_RANDOM_RED_TEST_POINTS 20
+#define NUMBER_RANDOM_GREEN_TEST_POINTS 20
 
 #define DO_RED_GREEN_TRICK false
 
-#define DETECT_QUADS_WITH_ALL_IMAGES true
+#define DETECT_QUADS_WITH_ALL_IMAGES false
+
+#define USE_BOTTOM_IN_ERROR_CALC true
 
 // the inverse scaling factor for quad detection
 #define QUAD_DETECTION_INV_SCALE 2
@@ -69,17 +72,17 @@
 //MARKOV
 #define XY_MARKOV_RESOLUTION 0.25
 // howmany nodes to pad the edges by
-#define XY_MARKOV_EDGE_PADDING 2
+#define XY_MARKOV_EDGE_PADDING 1
 #define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
 
 //if during a convolution the node the convolve is from doesnt exist the node equals the current node probablility times this
-#define NONEXISTANT_NODE_MULTIPLIER 0.1
+#define NONEXISTANT_NODE_MULTIPLIER 0.5
 
 //blur sigma multiplier for convolve ( this * move mag)
-#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 2
+#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 1.0
 
 //scale factor for sub pixel convolution
-#define CONVOLUTION_RESOLUTION_SCALE 10
+#define CONVOLUTION_RESOLUTION_SCALE 50
 
 
 

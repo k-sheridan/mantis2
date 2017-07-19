@@ -73,13 +73,19 @@ void evaluateBaseFrameHypothesis(BaseFrameHypothesis& hyp, bool colorOnly = fals
 	double error = 0; // this will be per pixel
 
 	// set up the local hypothesis for each mantis camera
-	hyp.measurement->img1.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img1.b2c);
+#if USE_BOTTOM_IN_ERROR_CALC
+	hyp.measurement->bottom_img.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->bottom_img.b2c);
+#endif
 	hyp.measurement->img2.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img2.b2c);
 	hyp.measurement->img3.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img3.b2c);
+	hyp.measurement->img4.thisHyp.setW2C(hyp.getW2B() * hyp.measurement->img4.b2c);
 
-	evaluateMantisImage(hyp.measurement->img1, projections, error, colorOnly);
+#if USE_BOTTOM_IN_ERROR_CALC
+	evaluateMantisImage(hyp.measurement->bottom_img, projections, error, colorOnly);
+#endif
 	evaluateMantisImage(hyp.measurement->img2, projections, error, colorOnly);
 	evaluateMantisImage(hyp.measurement->img3, projections, error, colorOnly);
+	evaluateMantisImage(hyp.measurement->img4, projections, error, colorOnly);
 
 	//ROS_DEBUG_STREAM("evaluated hypothesis. projection count: " << projections);
 

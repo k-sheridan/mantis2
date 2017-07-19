@@ -73,7 +73,7 @@ cv::Mat get3x3FromVector(boost::array<double, 9> vec)
 
 #define DATASET_FIX "front_camera"
 
-void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraInfoConstPtr& cam1, const sensor_msgs::ImageConstPtr& img2, const sensor_msgs::CameraInfoConstPtr& cam2, const sensor_msgs::ImageConstPtr& img3, const sensor_msgs::CameraInfoConstPtr& cam3)
+void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraInfoConstPtr& cam1, const sensor_msgs::ImageConstPtr& img2, const sensor_msgs::CameraInfoConstPtr& cam2, const sensor_msgs::ImageConstPtr& img3, const sensor_msgs::CameraInfoConstPtr& cam3, const sensor_msgs::ImageConstPtr& img4, const sensor_msgs::CameraInfoConstPtr& cam4)
 {
 	ROS_DEBUG("mantis2 start");
 	Measurement measurement;
@@ -94,11 +94,12 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 
 	//form all MantisImages
 	//TODO make sure shared data is not buggy
-	measurement.img1 = MantisImage(cv_bridge::toCvShare(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp, tf_listener);
+	measurement.bottom_img = MantisImage(cv_bridge::toCvShare(img1, img1->encoding)->image, get3x3FromVector(cam1->K), img1->header.frame_id, img1->header.stamp, tf_listener);
 	//measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), img2->header.frame_id, img2->header.stamp, tf_listener);
 	//TODO remove after dataset is fixed
 	measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), DATASET_FIX, img2->header.stamp, tf_listener);
 	measurement.img3 = MantisImage(cv_bridge::toCvShare(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp, tf_listener);
+	measurement.img4 = MantisImage(cv_bridge::toCvShare(img4, img4->encoding)->image, get3x3FromVector(cam4->K), img4->header.frame_id, img4->header.stamp, tf_listener);
 
 	currentPoseGuess.measurement = &measurement; // give the currentPoseGuess the measurement
 
@@ -143,7 +144,9 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 		ROS_DEBUG("done computing markov sense model");
 
 #if SUPER_DEBUG
-		xy_markov_model.viewModel(sense_model);
+		cv::Mat sense_render = xy_markov_model.renderModel(sense_model);
+		cv::imshow("sense", sense_render);
+		cv::waitKey(30);
 #endif
 		// convolve the model
 		xy_markov_model.convolve(dr.x(), dr.y());
@@ -206,12 +209,18 @@ int main(int argc, char **argv)
 	ss.str("");
 	ss << BACK_CAMERA_NS << "/camera_info";
 	message_filters::Subscriber<sensor_msgs::CameraInfo> cinfo3_sub(nh, ss.str(), 20);
+	ss.str("");
+	ss << LEFT_CAMERA_NS << "/image_rect_color";
+	message_filters::Subscriber<sensor_msgs::Image> image4_sub(nh, ss.str(), 20);
+	ss.str("");
+	ss << LEFT_CAMERA_NS << "/camera_info";
+	message_filters::Subscriber<sensor_msgs::CameraInfo> cinfo4_sub(nh, ss.str(), 20);
 
 
-	typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo> MySyncPolicy;
+	typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo> MySyncPolicy;
 
-	message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(50), image1_sub, cinfo1_sub, image2_sub, cinfo2_sub, image3_sub, cinfo3_sub);
-	sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4, _5, _6));
+	message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), image1_sub, cinfo1_sub, image2_sub, cinfo2_sub, image3_sub, cinfo3_sub, image4_sub, cinfo4_sub);
+	sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4, _5, _6, _7, _8));
 
 
 	// get the transform from world to base for initialization
