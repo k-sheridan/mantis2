@@ -26,9 +26,9 @@
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
 
-#define NUMBER_RANDOM_WHITE_TEST_POINTS 100
-#define NUMBER_RANDOM_RED_TEST_POINTS 20
-#define NUMBER_RANDOM_GREEN_TEST_POINTS 20
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 10
+#define NUMBER_RANDOM_RED_TEST_POINTS 10
+#define NUMBER_RANDOM_GREEN_TEST_POINTS 10
 
 #define DO_RED_GREEN_TRICK false
 
@@ -67,7 +67,7 @@
 
 
 //MARKOV
-#define XY_MARKOV_RESOLUTION 0.5
+#define XY_MARKOV_RESOLUTION 0.25
 // howmany nodes to pad the edges by
 #define XY_MARKOV_EDGE_PADDING 2
 #define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
@@ -76,7 +76,7 @@
 #define NONEXISTANT_NODE_MULTIPLIER 0.1
 
 //blur sigma multiplier for convolve ( this * move mag)
-#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 2.0
+#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 2
 
 //scale factor for sub pixel convolution
 #define CONVOLUTION_RESOLUTION_SCALE 10

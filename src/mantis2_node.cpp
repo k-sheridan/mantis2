@@ -153,6 +153,11 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 
 #if SUPER_DEBUG
 		xy_markov_model.viewModel(xy_markov_model.P);
+		std::vector<BaseFrameHypothesis> test;
+		test.push_back(currentPoseGuess);
+		cv::Mat gt = xy_markov_model.renderModel(xy_markov_model.computeSense(test));
+		cv::imshow("ground truth", gt);
+		cv::waitKey(30);
 #endif
 	}
 
