@@ -268,7 +268,7 @@ struct MantisImage{
 			projections++;
 
 
-			return sub_proj / (double)sub_proj;
+			return sub_error / (double)sub_proj;
 		}
 		else
 		{

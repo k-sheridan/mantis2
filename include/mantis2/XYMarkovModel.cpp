@@ -160,12 +160,16 @@ cv::Mat_<double> XYMarkovModel::computeSense(std::vector<BaseFrameHypothesis>& h
 			//TODO potential factor in projection count
 			if(e.error == 0){e.error = 0.0000001;}
 			sense(index) += 1.0 / e.error;
+
+			//ROS_DEBUG_STREAM("error: " << e.error);
 		}
 		else
 		{
 			ROS_DEBUG("hypothesis outside of markov model not added");
 		}
 	}
+
+	return sense;
 
 }
 
