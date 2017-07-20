@@ -39,7 +39,7 @@
 
 #include "mantis2/Mantis2Types.h"
 
-std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points; // error test points
+std::vector<tf::Vector3> white_test_points, green_test_points, red_test_points, side_line_test_points; // error test points
 #include "mantis2/GridTestPointGeneration.h" // function to generate the testpoints
 
 #include "mantis2/HypothesisError.h"
@@ -72,8 +72,9 @@ cv::Mat get3x3FromVector(boost::array<double, 9> vec)
 }
 
 #define DATASET_FIX "front_camera"
+#define DATASET_FIX2 "right_camera"
 
-void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraInfoConstPtr& cam1, const sensor_msgs::ImageConstPtr& img2, const sensor_msgs::CameraInfoConstPtr& cam2, const sensor_msgs::ImageConstPtr& img3, const sensor_msgs::CameraInfoConstPtr& cam3, const sensor_msgs::ImageConstPtr& img4, const sensor_msgs::CameraInfoConstPtr& cam4)
+void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraInfoConstPtr& cam1, const sensor_msgs::ImageConstPtr& img2, const sensor_msgs::CameraInfoConstPtr& cam2, const sensor_msgs::ImageConstPtr& img3, const sensor_msgs::CameraInfoConstPtr& cam3, const sensor_msgs::ImageConstPtr& img4, const sensor_msgs::CameraInfoConstPtr& cam4, const sensor_msgs::ImageConstPtr& img5)
 {
 	ROS_DEBUG("mantis2 start");
 	Measurement measurement;
@@ -100,6 +101,8 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 	measurement.img2 = MantisImage(cv_bridge::toCvShare(img2, img2->encoding)->image, get3x3FromVector(cam2->K), DATASET_FIX, img2->header.stamp, tf_listener);
 	measurement.img3 = MantisImage(cv_bridge::toCvShare(img3, img3->encoding)->image, get3x3FromVector(cam3->K), img3->header.frame_id, img3->header.stamp, tf_listener);
 	measurement.img4 = MantisImage(cv_bridge::toCvShare(img4, img4->encoding)->image, get3x3FromVector(cam4->K), img4->header.frame_id, img4->header.stamp, tf_listener);
+	//measurement.img5 = MantisImage(cv_bridge::toCvShare(img5, img5->encoding)->image, get3x3FromVector(cam4->K), img5->header.frame_id, img5->header.stamp, tf_listener);
+	measurement.img5 = MantisImage(cv_bridge::toCvShare(img5, img5->encoding)->image, get3x3FromVector(cam4->K), DATASET_FIX2, img5->header.stamp, tf_listener);
 
 	currentPoseGuess.measurement = &measurement; // give the currentPoseGuess the measurement
 
@@ -136,12 +139,16 @@ void callback(const sensor_msgs::ImageConstPtr& img1, const sensor_msgs::CameraI
 		std::vector<BaseFrameHypothesis> allMarkovModelPositions = generateAllXYShiftedHypotheses(currentPoseGuess);
 
 		ROS_DEBUG("evaluating all shifts");
-		evaluateBaseFrameHypotheses(allMarkovModelPositions, false);
+		evaluateBaseFrameHypotheses(allMarkovModelPositions, false, RANDOMLY_SAMPLE_BRUTEFORCE_UPDATE);
 		ROS_DEBUG("finished evaluating");
 
 		ROS_DEBUG("generating the markov sense model");
 		cv::Mat_<double> sense_model = xy_markov_model.computeSense(allMarkovModelPositions);
 		ROS_DEBUG("done computing markov sense model");
+
+#if RANDOMLY_SAMPLE_BRUTEFORCE_UPDATE
+		cv::GaussianBlur(sense_model, sense_model, cv::Size(0, 0), SENSE_MODEL_BLUR_SIGMA); // blur the model because we did not use all samples
+#endif
 
 #if SUPER_DEBUG
 		cv::Mat sense_render = xy_markov_model.renderModel(sense_model);
@@ -215,12 +222,14 @@ int main(int argc, char **argv)
 	ss.str("");
 	ss << LEFT_CAMERA_NS << "/camera_info";
 	message_filters::Subscriber<sensor_msgs::CameraInfo> cinfo4_sub(nh, ss.str(), 20);
+	ss.str("");
+	ss << RIGHT_CAMERA_NS << "/image_rect_color";
+	message_filters::Subscriber<sensor_msgs::Image> image5_sub(nh, ss.str(), 20);
 
+	typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image> MySyncPolicy;
 
-	typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image, sensor_msgs::CameraInfo> MySyncPolicy;
-
-	message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), image1_sub, cinfo1_sub, image2_sub, cinfo2_sub, image3_sub, cinfo3_sub, image4_sub, cinfo4_sub);
-	sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4, _5, _6, _7, _8));
+	message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(50), image1_sub, cinfo1_sub, image2_sub, cinfo2_sub, image3_sub, cinfo3_sub, image4_sub, cinfo4_sub, image5_sub);
+	sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4, _5, _6, _7, _8, _9));
 
 
 	// get the transform from world to base for initialization

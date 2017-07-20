@@ -15,6 +15,7 @@
 #define FRONT_CAMERA_NS "front_camera"
 #define BACK_CAMERA_NS "back_camera"
 #define LEFT_CAMERA_NS "left_camera"
+#define RIGHT_CAMERA_NS "right_camera"
 
 #define BASE_FRAME "base_link"
 #define WORLD_FRAME "world"
@@ -27,15 +28,30 @@
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
 
-#define NUMBER_RANDOM_WHITE_TEST_POINTS 20
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 100
+#define NUMBER_RANDOM_SIDE_TEST_POINTS 0
 #define NUMBER_RANDOM_RED_TEST_POINTS 20
 #define NUMBER_RANDOM_GREEN_TEST_POINTS 20
 
+#define RANDOMLY_SAMPLE_BRUTEFORCE_UPDATE false
+// if we are randomly sampling the hypotheses for evaluation
+#define RANDOM_HYPOTHESIS_SAMPLE_COUNT 3000
+
+
+// the amoutn to blur the sense model by if we randomly sample or use quadrilaterals
+#define SENSE_MODEL_BLUR_SIGMA 0.5
+
+
+// -=-==-=-=-=-=-=-=-=-=-=-=-=
 #define DO_RED_GREEN_TRICK false
 
 #define DETECT_QUADS_WITH_ALL_IMAGES false
 
-#define USE_BOTTOM_IN_ERROR_CALC true
+#define USE_BOTTOM_IN_ERROR_CALC false
+#define USE_IMG2_IN_ERROR_CALC true
+#define USE_IMG3_IN_ERROR_CALC true
+#define USE_IMG4_IN_ERROR_CALC true
+#define USE_IMG5_IN_ERROR_CALC false
 
 // the inverse scaling factor for quad detection
 #define QUAD_DETECTION_INV_SCALE 2
@@ -62,7 +78,7 @@
 
 //ERROR CALCULATION
 // search the surrounding 5 pixels to compute a points error
-#define POINT_ERROR_KERNEL_SIZE 2
+#define POINT_ERROR_KERNEL_SIZE 3
 
 #define WHITE cv::Vec3i(255, 255, 255)
 #define RED cv::Vec3i(0, 0, 255)
@@ -79,7 +95,7 @@
 #define NONEXISTANT_NODE_MULTIPLIER 0.5
 
 //blur sigma multiplier for convolve ( this * move mag)
-#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 1.0
+#define CONVOLVE_BLUR_SIGMA_MULTIPLIER 4
 
 //scale factor for sub pixel convolution
 #define CONVOLUTION_RESOLUTION_SCALE 50

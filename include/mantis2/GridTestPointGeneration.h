@@ -72,7 +72,15 @@ void computeTestPoints()
 					//ROS_DEBUG_STREAM("GREEN: " << x << ", " << y);
 				}
 				else{
-					white_test_points.push_back(tf::Vector3(x, y, 0.0));
+					if(xline == 0 || xline == GRID_WIDTH * TEST_POINT_SPLIT_COUNT)
+					{
+						side_line_test_points.push_back(tf::Vector3(x, y, 0.0));
+						ROS_DEBUG_STREAM("SIDE: " << x << ", " << y);
+					}
+					else
+					{
+						white_test_points.push_back(tf::Vector3(x, y, 0.0));
+					}
 					//ROS_DEBUG_STREAM("WHITE: " << x << ", " << y);
 				}
 

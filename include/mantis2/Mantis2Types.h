@@ -244,14 +244,17 @@ struct MantisImage{
 	 * computes the point error
 	 * adds 1 to projections if it is projected
 	 */
-	double computePointError(tf::Vector3 world_pos, cv::Vec3i model_color, int& projections)
+	double computePointError(tf::Vector3& world_pos, cv::Vec3i model_color, int& projections)
 	{
 		cv::Point2d raw = thisHyp.projectPoint(world_pos, this->K);
 		cv::Point center = cv::Point(raw.x, raw.y);
 		if(inFrame(center))
 		{
 			int sub_proj = 0;
-			double sub_error = 0;
+			double error = 0;
+			int r_agg = 0;
+			int g_agg = 0;
+			int b_agg = 0;
 
 			for(int i = -POINT_ERROR_KERNEL_SIZE; i <= POINT_ERROR_KERNEL_SIZE; i++)
 			{
@@ -260,15 +263,29 @@ struct MantisImage{
 					if(inFrame(test))
 					{
 						sub_proj++;
-						sub_error += computeColorError(model_color, this->img.at<cv::Vec3b>(test));
+						//error += computeColorError(model_color, this->img.at<cv::Vec3b>(test));
+						cv::Vec3b thisColor = this->img.at<cv::Vec3b>(test);
+						b_agg += thisColor[0];
+						g_agg += thisColor[1];
+						r_agg += thisColor[2];
 					}
 				}
 			}
 
+
+			cv::Vec3b meas;
+			double db = (b_agg / (double)sub_proj) - (double)model_color[0];
+			double dg = (g_agg / (double)sub_proj) - (double)model_color[1];
+			double dr = (r_agg / (double)sub_proj) - (double)model_color[2];
+
+			error = db*db+dr*dr*dg*dg;
+
+			//error += this->computeColorError(meas, model_color);
+
 			projections++;
 
-
-			return sub_error / (double)sub_proj;
+			//return sub_error / (double)sub_proj;
+			return error;
 		}
 		else
 		{
@@ -300,7 +317,7 @@ struct MantisImage{
 
 
 struct Measurement{
-	MantisImage bottom_img, img2, img3, img4;
+	MantisImage bottom_img, img2, img3, img4, img5;
 
 	int detectQuadrilaterals(){
 		int quads = 0;
@@ -309,6 +326,7 @@ struct Measurement{
 		quads += detectQuadrilaterals(img2);
 		quads += detectQuadrilaterals(img3);
 		quads += detectQuadrilaterals(img4);
+		quads += detectQuadrilaterals(img5);
 #endif
 		return quads;
 	}
