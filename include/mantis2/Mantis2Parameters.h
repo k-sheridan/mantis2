@@ -28,8 +28,8 @@
 //how much to split the nodes by integer
 #define TEST_POINT_SPLIT_COUNT 2
 
-#define NUMBER_RANDOM_WHITE_TEST_POINTS 100
-#define NUMBER_RANDOM_SIDE_TEST_POINTS 0
+#define NUMBER_RANDOM_WHITE_TEST_POINTS 60
+#define NUMBER_RANDOM_SIDE_TEST_POINTS 5
 #define NUMBER_RANDOM_RED_TEST_POINTS 20
 #define NUMBER_RANDOM_GREEN_TEST_POINTS 20
 
@@ -51,7 +51,7 @@
 #define USE_IMG2_IN_ERROR_CALC true
 #define USE_IMG3_IN_ERROR_CALC true
 #define USE_IMG4_IN_ERROR_CALC true
-#define USE_IMG5_IN_ERROR_CALC false
+#define USE_IMG5_IN_ERROR_CALC true
 
 // the inverse scaling factor for quad detection
 #define QUAD_DETECTION_INV_SCALE 2
@@ -78,7 +78,7 @@
 
 //ERROR CALCULATION
 // search the surrounding 5 pixels to compute a points error
-#define POINT_ERROR_KERNEL_SIZE 3
+#define POINT_ERROR_KERNEL_SIZE 2
 
 #define WHITE cv::Vec3i(255, 255, 255)
 #define RED cv::Vec3i(0, 0, 255)
@@ -86,7 +86,7 @@
 
 
 //MARKOV
-#define XY_MARKOV_RESOLUTION 0.25
+#define XY_MARKOV_RESOLUTION 0.5
 // howmany nodes to pad the edges by
 #define XY_MARKOV_EDGE_PADDING 1
 #define XY_MARKOV_MINIMUM_PROBABLILTY 1e-16
